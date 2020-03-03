@@ -1,13 +1,11 @@
 # TensorFlow 2 Gradient Checkpointing
-This is a simple decorator to enable gradient checkpointing (e.g. [Chen et al. (2016)](https://arxiv.org/pdf/1604.06174.pdf)) in TF2.
-
-This isn't very polished, but it's been letting me train bigger GPT-2 models on smaller hardware, so I thought I'd share it.
+This is a simple decorator to enable gradient checkpointing (e.g. [Chen et al. (2016)](https://arxiv.org/pdf/1604.06174.pdf)) in TF2. It isn't very polished, but it's been letting me train bigger GPT-2 models on smaller hardware, so I thought I'd share it.
 
 
 ## Basic Usage
 Use the `checkpointable` decorator to allow a function (or callable object such as a Keras `Layer`) to use gradient checkpointing. If checkpointing is desired, call the decorated function with the `_checkpoint` keyword argument set to `True`.
 
-The example below shows a model with 40000 "layers", called in blocks of 200. On a GTX 1070 Ti, this code will result in OOM when the `_checkpoint` argument is set to `False`.
+The example below shows a model with 40000 "layers", but checkpointing allows just 400 to be in memory at any point. On a GTX 1070 Ti, this code will result in an OOM error when the `_checkpoint` argument is set to `False`.
 
 ```python
 import tensorflow as tf
@@ -31,8 +29,7 @@ with tf.GradientTape() as g:
     loss = tf.reduce_sum(x)
 print(g.gradient(loss, x))
 ```
-
-Arguments which are not float32 tensors, or nested list/tuple structures of such tensors are allowed, but ignored for the purposes of gradient computation.
+Arguments which are not float32 tensors (or nested list/tuple structures of such tensors) are allowed, but ignored for the purposes of gradient computation.
 
 ## Variables
 If the decorated function uses variables which are not arguments, pass a list of them via the `_watch_vars` keyword argument as shown below.
