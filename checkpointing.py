@@ -5,7 +5,7 @@ import time
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.util import nest
-import tensorflow.python.eager.tape as tape
+from tensorflow.python.eager import tape
 
 def checkpointable(f):
     @wraps(f)
