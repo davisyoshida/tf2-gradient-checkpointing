@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from functools import wraps
 import random
 import time
@@ -10,12 +11,15 @@ from tensorflow.python.eager import tape
 def checkpointable(f):
     @wraps(f)
     def inner(*args, _checkpoint=False, _watch_vars=None, _force_seed=False, **kwargs):
+        if _force_seed:
+            if isinstance(_force_seed, Iterator):
+                seed = next(_force_seed)
+            else:
+                seed = random.randint(1, 1<<31)
+
         if _checkpoint:
             if _watch_vars is None:
                 _watch_vars = []
-
-            if _force_seed:
-                seed = random.randint(1, 1<<31)
 
             watch_args = []
 
@@ -59,5 +63,7 @@ def checkpointable(f):
 
             return output
         else:
+            if _force_seed:
+                tf.random.set_seed(seed)
             return f(*args, **kwargs)
     return inner
