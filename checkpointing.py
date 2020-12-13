@@ -17,7 +17,7 @@ def checkpointable(f):
             else:
                 seed = random.randint(1, 1<<31)
 
-        if _checkpoint:
+        if _checkpoint and tape.could_possibly_record():
             if _watch_vars is None:
                 _watch_vars = []
 
@@ -41,11 +41,14 @@ def checkpointable(f):
                     tf.random.set_seed(seed)
 
                 result = f(*args, **kwargs)
-
                 flat_result = nest.flatten(result)
                 # No idea what the point of this is but they do it in tf.custom_gradient so I'm doing it too
                 flat_result = [tf.identity(x) for x in flat_result]
                 output = nest.pack_sequence_as(result, flat_result)
+            del flat_inputs
+            del result
+            del unique_inputs
+            del unique_vars
 
             def grad(*output_grads):
                 with tf.GradientTape() as g:
